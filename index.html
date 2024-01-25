@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生存难度系统图像制作器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>生存难度系统图像制作器</h1>
+    <label for="textInput">输入图片文字（字数限制为 5）：</label>
+    <input type="text" id="textInput" placeholder="输入文字" maxlength="5" >
+    <br>
+    <label for="fontSizeInput">调整字体大小（单个字推荐60 - 70）：</label>
+    <input type="number" id="fontSizeInput" min="24" max="128" value="68">
+    <br>
+    <label for="xInput">X 坐标（可选）：</label>
+    <input type="number" id="xInput" placeholder="X 坐标" min="-50" max="280" value="100">
+    <br>
+    <label for="yInput">Y 坐标（可选）：</label>
+    <input type="number" id="yInput" placeholder="Y 坐标" min="-50" max="250" value="15">
+    <br>
+    <label>选择颜色：</label>
+    <input type="color" id="colorInput" value="#000000">
+    <br>
+    <canvas id="outputCanvas" width="236" height="198"></canvas>
+    <br>
+    <button onclick="generateImage()">生成图像</button>
+    <button onclick="downloadImage()">下载图像</button>
+    <script>
+        let imageDataUrl = '';  // 用于存储生成的图像的数据URL
+
+        function generateImage() {
+            const text = document.getElementById('textInput').value;
+            const fontSize = document.getElementById('fontSizeInput').value;
+            let x = document.getElementById('xInput').value || 0; // 如果用户未填写，默认为 0
+            let y = document.getElementById('yInput').value || 0; // 如果用户未填写，默认为 0
+            const color = document.getElementById('colorInput').value;
+
+            // 获取画布和绘图上下文
+            const canvas = document.getElementById('outputCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // 读取原图
+            const img = new Image();
+            img.crossOrigin = "anonymous"; // 需要添加跨域属性
+            img.src = "data:image/png;base64,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";
+
+            // 在图像加载后执行绘制操作
+            img.onload = function() {
+                // 清空画布
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // 绘制原图
+                ctx.drawImage(img, 0, 0);
+
+                // 绘制文本
+                ctx.font = fontSize + "px Arial";
+                ctx.textAlign = "left";  // 调整为左对齐
+                ctx.textBaseline = "top";  // 调整为顶部对齐
+                ctx.fillStyle = color;
+
+                // 计算文本位置
+                x = parseInt(x, 10);  // 将 x 转换为整数
+                y = parseInt(y, 10);  // 将 y 转换为整数
+                const textX = x;  // 将计算后的 x 坐标赋给 textX
+                const textY = y;  // 将计算后的 y 坐标赋给 textY
+
+                // 绘制文本
+                ctx.fillText(text, textX, textY);
+
+                // 将计算后的 x 和 y 坐标同步到输入框内
+                document.getElementById('xInput').value = textX;
+                document.getElementById('yInput').value = textY;
+
+                // 获取图像数据
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                // 变色
+                for (let i = 0; i < imageData.data.length; i += 4) {
+                    // 跳过透明像素
+                    if (imageData.data[i + 3] !== 0) {
+                        imageData.data[i] = colorToRgb(color)[0];
+                        imageData.data[i + 1] = colorToRgb(color)[1];
+                        imageData.data[i + 2] = colorToRgb(color)[2];
+                    }
+                }
+
+                // 更新图像数据
+                ctx.putImageData(imageData, 0, 0);
+
+                // 将生成的图像数据URL保存
+                imageDataUrl = canvas.toDataURL();
+            };
+        }
+
+        function downloadImage() {
+            if (imageDataUrl) {
+                // 创建下载链接
+                const a = document.createElement('a');
+                a.href = imageDataUrl;
+                a.download = 'result_image.png';
+
+                // 模拟点击下载链接
+                a.click();
+            } else {
+                alert('请先生成图像！');
+            }
+        }
+
+        function colorToRgb(hexColor) {
+            const hex = hexColor.replace(/^#/, '');
+            const bigint = parseInt(hex, 16);
+            const r = (bigint >> 16) & 255;
+            const g = (bigint >> 8) & 255;
+            const b = bigint & 255;
+            return [r, g, b];
+        }
+    </script>
+</body>
+</html>
